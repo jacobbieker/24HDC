@@ -115,8 +115,7 @@ class TweetSeqGenerator(Sequence):
         return int(np.ceil(len(self.data) / float(self.batch_size)))
 
     def on_epoch_end(self):
-        print("end")
-        #self.data = shuffle(self.data, self.labels)
+        self.data, self.labels = shuffle(self.data, self.labels)
 
 
 def generate_timeseries(category, length, limit=None):
