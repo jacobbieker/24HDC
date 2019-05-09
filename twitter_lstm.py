@@ -41,6 +41,13 @@ class TweetSeqGenerator(Sequence):
         """
         timeseries = self.data[index * self.batch_size:(index + 1) * self.batch_size]
         labels = self.labels[index * self.batch_size:(index + 1) * self.batch_size]
+        
+        print("timeseries:")
+        print(timeseries)
+        print(timeseries.shape)
+        print("labels")
+        print(labels)
+        print(labels.shape)
 
         return timeseries, labels
 
@@ -90,6 +97,9 @@ print(next_melding[:3])
 
 x = np.array(sequences)
 y = np.array(next_melding)
+
+print(len(x))
+print(len(y))
 
 model = Sequential()
 model.add(LSTM(128, input_shape=(maxlen, len(tweet_keywords[0]))))
