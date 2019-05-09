@@ -99,7 +99,10 @@ model.add(Activation('softmax'))
 optimizer = RMSprop(lr=0.01)
 model.compile(loss='categorical_crossentropy', optimizer=optimizer)
 
-model.fit(x, y, batch_size=128, epochs=50)
+train_gen = TweetSeqGenerator(data=x, labels=y, batch_size=1)
+val_gen = TweetSeqGenerator(data=x, labels=y, batch_size=1)
+
+model.fit_generator(generator=train_gen, validation_data=val_gen, epochs=50)
 
 
 def predict_melding():
