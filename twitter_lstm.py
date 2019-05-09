@@ -15,6 +15,69 @@ import random
 import sys
 import io
 
+def getDATA():
+    import pandas as pd
+    import google.datalab.bigquery as bq
+    query_K2019tweets = """
+
+    SELECT created_at,keywords FROM `hdc-politie-team-3.politie.tweets` WHERE iso_language_code='nl' and created_at BETWEEN "2019-04-26" AND "2019-04-29" ORDER BY created_at ASC
+
+    """
+    # Transform your query to BigQuery object
+    bq_object = bq.Query(query_K2019tweets)
+
+    # Execute your query
+    result = bq_object.execute().result()
+
+    # Transform your output to a Pandas dataframe
+    kings2019tweets_df = result.to_dataframe()
+    
+    return kings2019tweets_df
+
+def getkeywords():
+    import pandas as pd
+    import google.datalab.bigquery as bq
+    query_K2019keys = """
+
+   SELECT distinct key FROM `hdc-politie-team-3.politie.tweets`,unnest(keywords) as key
+
+    """
+    # Transform your query to BigQuery object
+    bq_object = bq.Query(query_K2019keys)
+    
+    # Execute your query
+    result = bq_object.execute().result()
+
+    # Transform your output to a Pandas dataframe
+    kings2019keys_df = result.to_dataframe()
+    aj=kings2019keys_df.values.tolist()
+    newa=[]
+    for i in range(len(aj)):
+        newa.append(aj[i][0])
+    
+    nexta=sorted(newa)
+    
+    return nexta
+def getvectorfortime(b,a):
+    
+
+    newb=b.values.tolist()
+    c=[0]*len(a)
+    for i in range (len(newb)):
+        am= newb[i][1]
+        
+        for j in range (len(am)):
+            c[a.index(am[j])]+=1
+    print (c)
+        
+        
+    
+    return c
+        
+
+b=getDATA()
+a=getkeywords()
+cc=getvectorfortime(b,a)
 
 class TweetSeqGenerator(Sequence):
 
