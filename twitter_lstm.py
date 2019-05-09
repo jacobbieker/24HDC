@@ -17,21 +17,21 @@ import io
 
 
 class TweetSeqGenerator(Sequence):
-  
+
     def __init__(self, data, labels, batch_size, normalize=False):
-      self.data = data
-      self.labels = labels
-      if len(self.data) != len(self.labels):
-        raise ValueError("Data and Labels have to be same size")
-      self.batch_size = batch_size
-      self.normalize = normalize
-      
-      # If normalize, then normalize each timeseries to sum to 1 on each keyword
-      if self.normalize:
-        for i in range(len(self.data)):
-            # Normalizes the rows of the matrix to 1
-            # Axis=0 should normalize the columns to 1
-            self.data[i] = self.data[i]/np.max(self.data[i], axis=1)
+        self.data = data
+        self.labels = labels
+        if len(self.data) != len(self.labels):
+            raise ValueError("Data and Labels have to be same size")
+        self.batch_size = batch_size
+        self.normalize = normalize
+
+        # If normalize, then normalize each timeseries to sum to 1 on each keyword
+        if self.normalize:
+            for i in range(len(self.data)):
+                # Normalizes the rows of the matrix to 1
+                # Axis=0 should normalize the columns to 1
+                self.data[i] = self.data[i]/np.max(self.data[i], axis=1)
 
     def __getitem__(self, index):
         """
@@ -41,13 +41,6 @@ class TweetSeqGenerator(Sequence):
         """
         timeseries = self.data[index * self.batch_size:(index + 1) * self.batch_size]
         labels = self.labels[index * self.batch_size:(index + 1) * self.batch_size]
-        
-        print("timeseries:")
-        print(timeseries)
-        print(timeseries.shape)
-        print("labels")
-        print(labels)
-        print(labels.shape)
 
         return timeseries, labels
 
@@ -59,26 +52,27 @@ class TweetSeqGenerator(Sequence):
         return int(np.ceil(len(self.data) / float(self.batch_size)))
 
     def on_epoch_end(self):
-            self.data = shuffle(self.data, self.labels)
-            
+        print("end")
+        #self.data = shuffle(self.data, self.labels)
+
 
 def generate_timeseries(category, length, limit=None):
-  """
-  Generates timeseries from the tweets, and gets the next event to occur in the future
-  """
-  return NotImplementedError
+    """
+    Generates timeseries from the tweets, and gets the next event to occur in the future
+    """
+    return NotImplementedError
 
 
 def clean_tweet(tweet):
-  """
-  Cleans a tweet to just English characters, removing URLs, etc.
-  What is given is just the tweet itself, not the metadata
-  """
-  tweet = re.sub(r"http\S+", "", tweet) # removes URLs
-  tweet = re.sub(r"[^a-zA-Z0-9]+", ' ', tweet) # Removes non-alphanumeric chars
-  tweet = tweet.lower() # Lowercases it
-  
-  return tweet
+    """
+    Cleans a tweet to just English characters, removing URLs, etc.
+    What is given is just the tweet itself, not the metadata
+    """
+    tweet = re.sub(r"http\S+", "", tweet) # removes URLs
+    tweet = re.sub(r"[^a-zA-Z0-9]+", ' ', tweet) # Removes non-alphanumeric chars
+    tweet = tweet.lower() # Lowercases it
+
+    return tweet
 
 tweet_keywords = [[0,1,2],[0,3,2],[5,4,1],[2,3,4],[0,0,1],[2,4,3]]
 melding = [[0,1],[1,0],[1,0],[0,1],[1,1],[1,0]]
@@ -98,8 +92,11 @@ print(next_melding[:3])
 x = np.array(sequences)
 y = np.array(next_melding)
 
-print(len(x))
-print(len(y))
+x1 = np.array(sequences)
+y1 = np.array(next_melding)
+
+print("X Hsape: {}".format(x.shape))
+print("Y Shape: {}".format(y.shape))
 
 model = Sequential()
 model.add(LSTM(128, input_shape=(maxlen, len(tweet_keywords[0]))))
@@ -110,9 +107,9 @@ optimizer = RMSprop(lr=0.01)
 model.compile(loss='categorical_crossentropy', optimizer=optimizer)
 
 train_gen = TweetSeqGenerator(data=x, labels=y, batch_size=1)
-val_gen = TweetSeqGenerator(data=x, labels=y, batch_size=1)
+val_gen = TweetSeqGenerator(data=x1, labels=y1, batch_size=1)
 
-model.fit_generator(generator=train_gen, validation_data=val_gen, epochs=50)
+model.fit_generator(generator=train_gen, validation_data=val_gen, use_multiprocessing=True, workers=4, epochs=50)
 
 
 def predict_melding():
